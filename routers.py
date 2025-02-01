@@ -1,17 +1,20 @@
-from fastapi import APIRouter, HTTPException, Depends, Form
+from fastapi import APIRouter, Form, Depends
 from fastapi.responses import JSONResponse
 from fastapi.responses import HTMLResponse
-from inference.cvt_inference import CVTInference
-
+from inference import Inference
+from dependencies import get_model, get_layer_name
 
 router = APIRouter(prefix="/routers", tags=["routers"])
 
-# Endpoint principal
-@router.post("/predict")
-def predict(image: str = Form(...)):
+# Endpoint cvt
+@router.post("/predict-cvt")
+def predict_cvt(image: str = Form(...), model=Depends(lambda: get_model('cvt')), LAYER_NAME=Depends(lambda: get_layer_name('cvt'))):
+    
+    if model is None or LAYER_NAME is None:
+        raise HTTPException(status_code=500, detail="Model or layer name not loaded")
     
     # Inferencia
-    confidence, predicted_class, image_base64 = CVTInference(image, model, LAYER_NAME)
+    confidence, predicted_class, image_base64 = Inference(image, model, LAYER_NAME).call()
     
     response_data = {
         "model_name": 'CVT',
@@ -25,18 +28,24 @@ def predict(image: str = Form(...)):
     response.headers["Access-Control-Allow-Origin"] = "*"
     return response
 
-# API WELCOME
-@router.get("/", response_class=HTMLResponse)
-def read_root():
-    return {
-        "message": "Bienvenido a la API de Clasificación de Imágenes",
-        "instructions": {
-            "endpoint": "/generate_gradCam/",
-            "method": "POST",
-            "description": "Envía una imagen para obtener una predicción y un mapa de calor Grad-CAM.",
-            "example": {
-                "curl": 'curl -X POST -F "image=@ruta/a/tu/imagen.jpg" https://huggingface.co/spaces/MarilineDelgado/stegoapi/generate_gradCam/'
-            }
-        }
+# Endpoint swint
+@router.post("/predict-swint")
+def predict_swint(image: str = Form(...), model=Depends(lambda: get_model('swint')), LAYER_NAME=Depends(lambda: get_layer_name('swint'))):
+    
+    if model is None or LAYER_NAME is None:
+        raise HTTPException(status_code=500, detail="Model or layer name not loaded")
+    
+    # Inferencia
+    confidence, predicted_class, image_base64 = Inference(image, model, LAYER_NAME).call()
+    
+    response_data = {
+        "model_name": 'SWINT',
+        "layer_name": LAYER_NAME,
+        "prediction_percentage": float(confidence),
+        "predicted_class": predicted_class,
+        "image": image_base64,
     }
- 
+
+    response = JSONResponse(content=response_data)
+    response.headers["Access-Control-Allow-Origin"] = "*"
+    return response

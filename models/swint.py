@@ -1,17 +1,18 @@
 import tensorflow as tf
 from tensorflow.keras import backend as K
-from layers.transformer import Transformer
+from layers.cnn import SEBlock
+from layers.swint import SwinTransformer, PatchMerging, PatchEmbedding, ReshapeLayer, SwinTBlock
 from azure.storage.blob import BlobServiceClient
 
-class DownloadModelCVT:
+class DownloadModelSWINT:
     def __init__(self, CONNECTION_STRING, CONTAINER_NAME, BLOB_NAME):
         self.CONNECTION_STRING = CONNECTION_STRING
         self.CONTAINER_NAME = CONTAINER_NAME
         self.BLOB_NAME = BLOB_NAME
-        self.LAYER_NAME = 'conv2d_27'
+        self.LAYER_NAME = 'conv2d_4'
         
         # Ruta en Azure Web Apps (no persistente)
-        self.local_path = "CVT_local.hdf5" 
+        self.local_path = "SWINT_local.hdf5" 
     
     @staticmethod    
     def __Tanh3(x):
@@ -28,7 +29,12 @@ class DownloadModelCVT:
             
         custom_objects = {
         '__Tanh3':self.__Tanh3,
-        'transformer': Transformer
+        'SEBlock': SEBlock,
+        'SwinTransformer': SwinTransformer,
+        'PatchMerging': PatchMerging,
+        'PatchEmbedding': PatchEmbedding,
+        'ReshapeLayer': ReshapeLayer,
+        'SwinTBlock': SwinTBlock
         }
         
 

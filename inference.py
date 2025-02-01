@@ -1,6 +1,5 @@
 import tensorflow as tf
 from tensorflow import keras
-from layers.transformer import Transformer
 import matplotlib as mpl
 import numpy as np
 from PIL import Image
@@ -8,14 +7,14 @@ import requests
 import io
 import base64
     
-class CVTInference:
+class Inference:
     def __init__(self, image, model, layer_name):
         self.image = image
         self.model = model
         self.layer_name = layer_name
 
     # Funcion para leer imagen
-    def read_imagefile(img_url):
+    def read_imagefile(self, img_url):
         if img_url.startswith('data:image'):
             base64_data = img_url.split(",")[1]
             image_data = base64.b64decode(base64_data)
@@ -33,7 +32,7 @@ class CVTInference:
         return img
 
     # Funcion para preprocesar la imagen antes de la inferencia
-    def preprocess_image(img_array):
+    def preprocess_image(self, img_array):
         input_image = Image.fromarray(img_array.squeeze()).resize((256, 256))
         input_image = tf.keras.utils.img_to_array(input_image)
         if len(input_image.shape) == 2:  # Grayscale image
@@ -43,7 +42,7 @@ class CVTInference:
         return input_image
     
     # Función para generar Grad-CAM
-    def generate_gradcam(model, layer_name, img_array):
+    def generate_gradcam(self, model, layer_name, img_array):
         grad_model = tf.keras.models.Model(
             [model.inputs], [model.get_layer(layer_name).output, model.output]
         )
@@ -66,7 +65,7 @@ class CVTInference:
         return heatmap.numpy()
 
     # Funcion para aplicar Grad-CAM sobre la imagen
-    def apply_gradcam(heatmap, img_array):
+    def apply_gradcam(self, heatmap, img_array):
         heatmap = np.uint8(255 * heatmap)
         jet = mpl.colormaps["jet"]
         jet_colors = jet(np.arange(256))[:, :3]
@@ -77,9 +76,11 @@ class CVTInference:
         
         superimposed_img = jet_heatmap * 0.4 + img_array
         superimposed_img = tf.keras.utils.array_to_img(superimposed_img)
+        
+        return superimposed_img
     
     # Funcion para decodificar predicciones
-    def decode_predictions(preds):
+    def decode_predictions(self, preds):
         class_labels = {0: "cover", 1: "stego"}
         if len(preds.shape) == 1: 
             idx = int(np.argmax(preds)) 
@@ -94,11 +95,11 @@ class CVTInference:
     # Funcion para inferir
     def call(self):
         # Leer imagen
-        img_array = read_imagefile(self.image)
+        img_array = self.read_imagefile(self.image)
         # Generar Grad-CAM
-        heatmap = generate_gradcam(self.model, self.layer_name, img_array)
+        heatmap = self.generate_gradcam(self.model, self.layer_name, img_array)
         # Aplicar Grad-CAM sobre la imagen
-        superimposed_img = apply_gradcam(heatmap, img_array)            
+        superimposed_img = self.apply_gradcam(heatmap, img_array)            
         # Convertir imagen a Base64
         buffered = io.BytesIO()
         superimposed_img.save(buffered, format="PNG")
@@ -106,9 +107,9 @@ class CVTInference:
         image_base64 = base64.b64encode(buffered.getvalue()).decode('utf-8')
             
         # Preprocesar imagen
-        input_image = preprocess_image(img_array)
+        input_image = self.preprocess_image(img_array)
         # Obtener predicción
         predictions = self.model.predict(input_image)
-        idx, predicted_class, confidence = decode_predictions(predictions)
+        idx, predicted_class, confidence = self.decode_predictions(predictions)
         
         return confidence, predicted_class, image_base64

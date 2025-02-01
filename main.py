@@ -1,21 +1,8 @@
-from fastapi import FastAPI, UploadFile
-from fastapi.responses import JSONResponse
-from fastapi.responses import HTMLResponse, FileResponse
+from fastapi import FastAPI
 from starlette.middleware.cors import CORSMiddleware
-from models.cvt import DownloadModel
-import routers
+from routers import router
 import uvicorn
-import requests
-
-from azure.storage.blob import BlobServiceClient
-
-# Configuración
-CONNECTION_STRING = "DefaultEndpointsProtocol=https;AccountName=mariline;AccountKey=2Oavrz+lzLK794gkGFINoBqY4MwO7VsUmqVaRMi2FMNkMNTctl0aScOuDdylho0O6zR7WLYy8rAB+AStcaPXdA==;EndpointSuffix=core.windows.net"
-CONTAINER_NAME = "model"
-BLOB_NAME = "cvt-model"
-
-# Cargar modelo
-LAYER_NAME, modelcvt = DownloadModel(CONNECTION_STRING, CONTAINER_NAME, BLOB_NAME).load_model()
+ 
 
 app = FastAPI()
 
@@ -27,8 +14,19 @@ app.add_middleware(
     allow_headers=["*"],  # Permitir todos los encabezados
 )
 
-app.include_router(routers.router)
+app.include_router(router)
 
+# API WELCOME
+@app.get("/")
+def read_root():
+    return {
+        "message": "Bienvenido a la API de Clasificación de Imágenes",
+        "instructions": {
+            "endpoints": ["/routers/predict-cvt/", "/routers/predict-swint/"],
+            "method": "POST",
+            "description": "Envía una imagen para obtener una predicción y un mapa de calor Grad-CAM.",
+        }
+    }
        
 if __name__ == "__main__":
     uvicorn.run("main:app", host="0.0.0.0", port=8000)
