@@ -12,7 +12,7 @@ app = FastAPI()
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://127.0.0.1:8080", "https://www.boxia.site", "https://stego-app-catalina-delgados-projects.vercel.app/"],  # Permitir todos los orígenes
+    allow_origins=["http://127.0.0.1:8080", "https://www.boxia.site", "https://stego-app-catalina-delgados-projects.vercel.app"],  # Permitir todos los orígenes
     allow_credentials=True,  # Permitir cookies/autenticación
     allow_methods=["*"],  # Permitir todos los métodos HTTP (GET, POST, PUT, DELETE, etc.)
     allow_headers=["*"],  # Permitir todos los encabezados
