@@ -12,22 +12,22 @@ BLOB_NAME_CVT = "CVT.hdf5"
 CONTAINER_NAME_SWINT = "swint-model"
 BLOB_NAME_SWINT = "SwintBlocks.hdf5"
 
-# Cargar modelo
+
 # Cargar modelo
 try:
-    print("Descargando modelo SWINT...")
+    print("Downloading the SWINT model...")
     modelswint, LAYER_NAME_SWINT = DownloadModelSWINT(CONNECTION_STRING, CONTAINER_NAME_SWINT, BLOB_NAME_SWINT).load_model()
-    print("Modelo SWINT descargado correctamente.")
+    print("Download of the SWINT model was successful")
 except Exception as e:
-    print(f"Error al descargar el modelo SWINT: {e}")
+    print(f"There was an error downloading the SWINT model: {e}")
     LAYER_NAME_SWINT, modelswint = None, None
 
 try:
-    print("Descargando modelo CVT...")
+    print("Downloading the CVT model...")
     modelcvt, LAYER_NAME_CVT = DownloadModelCVT(CONNECTION_STRING, CONTAINER_NAME_CVT, BLOB_NAME_CVT).load_model()
-    print("Modelo CVT descargado correctamente.")
+    print("Download of the CVT model was successful")
 except Exception as e:
-    print(f"Error al descargar el modelo CVT: {e}")
+    print(f"There was an error downloading the CVT model: {e}")
     LAYER_NAME_CVT, modelcvt = None, None
     
 

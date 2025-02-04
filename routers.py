@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Form, Depends
+from fastapi import APIRouter, Form, Depends, HTTPException
 from fastapi.responses import JSONResponse
 from fastapi.responses import HTMLResponse
 from inference import Inference
